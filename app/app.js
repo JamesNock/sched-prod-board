@@ -31,10 +31,49 @@ function buildRow(i) {
     el('time', { datetime: i.openedAt, title: i.openedAt }, timeFmt.format(new Date(i.openedAt))),
   );
   const btn = el('button', { type: 'button', 'data-testid': 'ack', class: 'ack' }, 'Ack');
-  btn.addEventListener('click', () => onAck(i.id, btn));
+  btn.addEventListener('click', () => askToAck(i.id)); // R2: Ack asks first; the confirm names the id
+
   row.append(btn);
   return row;
 }
+
+// R2 (product, after step 1): the confirm names the incident the click landed on, so a row that moved under
+// the pointer is caught before the ack is sent. It holds the id from the click, not a position.
+const backdrop = document.querySelector('.confirm-backdrop');
+const confirmBox = document.querySelector('[data-testid="confirm"]');
+const confirmAck = document.querySelector('[data-testid="confirm-ack"]');
+const confirmCancel = document.querySelector('[data-testid="confirm-cancel"]');
+let pending = null; // { id, opener }
+
+function askToAck(id) {
+  const r = rows.get(id);
+  if (!r) return;
+  pending = { id, opener: document.activeElement };
+  confirmBox.querySelectorAll('.confirm-id').forEach((n) => (n.textContent = id));
+  confirmBox.querySelector('.confirm-what').textContent = `${r.incident.severity} · ${r.incident.service} · ${r.incident.region} · ${r.incident.summary}`;
+  confirmBox.dataset.id = id;
+  backdrop.hidden = false;
+  confirmAck.focus();
+}
+
+function closeConfirm() {
+  const opener = pending?.opener;
+  pending = null;
+  backdrop.hidden = true;
+  delete confirmBox.dataset.id;
+  if (opener?.isConnected) opener.focus();
+}
+
+confirmAck.addEventListener('click', () => {
+  if (!pending) return;
+  const { id } = pending;
+  closeConfirm();
+  const btn = rows.get(id)?.row.querySelector('[data-testid="ack"]');
+  if (btn) onAck(id, btn);
+});
+confirmCancel.addEventListener('click', closeConfirm);
+backdrop.addEventListener('click', (e) => e.target === backdrop && closeConfirm());
+document.addEventListener('keydown', (e) => e.key === 'Escape' && pending && closeConfirm());
 
 async function onAck(id, btn) {
   btn.disabled = true;

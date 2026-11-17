@@ -19,3 +19,13 @@ footer { color: #777; font-size: 13px; }
 .row.is-acked { background: #f3faf5; }
 .row.is-new { animation: flash 2s ease-out; }
 @keyframes flash { from { background: #fff4c2; } to { background: #fff; } }
+
+.confirm-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.28); display: grid; place-items: center; z-index: 10; }
+.confirm-backdrop[hidden] { display: none; }
+.confirm { background: #fff; border-radius: 10px; padding: 18px 20px; width: min(440px, calc(100vw - 32px)); box-shadow: 0 10px 40px rgba(0,0,0,.25); }
+.confirm-title { margin: 0 0 4px; font-size: 18px; }
+.confirm-title strong { font-family: ui-monospace, monospace; }
+.confirm-what { margin: 0 0 16px; color: #555; }
+.confirm-actions { display: flex; gap: 8px; justify-content: flex-end; }
+.btn { font: inherit; padding: 6px 14px; border: 1px solid #c7c7cc; border-radius: 6px; background: #fff; cursor: pointer; }
+.btn.primary { background: #1d1d1f; color: #fff; border-color: #1d1d1f; }
